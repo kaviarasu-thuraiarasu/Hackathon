@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+langchain
+langchain_community
+openai
+websockets
+reportlab
+langchain_openai
+langgraph
+python_dotenv

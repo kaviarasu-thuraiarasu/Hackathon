@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Fancy Chat with User Question and Answer</title>
+
+    <style>
+
+        body {
+
+            font-family: Arial, sans-serif;
+
+            background-color: #f7f7f7;
+
+            margin: 0;
+
+            padding: 0;
+
+            display: flex;
+
+            justify-content: center;
+
+            align-items: center;
+
+            height: 100vh;
+
+        }
+
+ 
+
+        .chat-container {
+
+            width: 600px; /* Increased width */
+
+            height: 700px; /* Increased height */
+
+            max-width: 100%;
+
+            background-color: white;
+
+            border-radius: 10px;
+
+            overflow: hidden;
+
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+
+            display: flex;
+
+            flex-direction: column;
+
+            padding: 20px;
+
+            position: relative;
+
+        }
+
+ 
+
+        .messages {
+
+            flex-grow: 1;
+
+            overflow-y: auto;
+
+            margin-bottom: 20px;
+
+            padding-right: 10px;
+
+            padding-left: 10px; /* Added padding */
+
+        }
+
+ 
+
+        .message {
+
+            margin-bottom: 15px;
+
+            padding: 10px;
+
+            border-radius: 10px;
+
+            max-width: 75%;
+
+            word-wrap: break-word; /* Prevent overflow */
+
+        }
+
+ 
+
+        .message.user {
+
+            background-color: #d1e7ff;
+
+            align-self: flex-start;
+
+            margin-left: 10px;
+
+            margin-bottom: 5px;
+
+        }
+
+ 
+
+        .message.bot {
+
+            background-color: #f1f1f1;
+
+            align-self: flex-end;
+
+            margin-right: 10px;
+
+            margin-bottom: 5px;
+
+        }
+
+ 
+
+        /* Code Block Styles */
+
+        .code-block {
+
+            background-color: #282c34;
+
+            color: #f8f8f2;
+
+            border: 1px solid #ddd;
+
+            border-radius: 10px;
+
+            padding: 15px;
+
+            font-family: 'Courier New', monospace;
+
+            font-size: 14px;
+
+            white-space: pre-wrap; /* Ensures wrapping for long lines */
+
+            word-wrap: break-word; /* Prevents overflow */
+
+            margin: 0;
+
+            max-width: 100%;
+
+            overflow-x: auto;
+
+        }
+
+ 
+
+        .input-container {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+        }
+
+ 
+
+        input[type="text"] {
+
+            width: 80%;
+
+            padding: 10px;
+
+            border-radius: 20px;
+
+            border: 1px solid #ddd;
+
+            font-size: 16px;
+
+            outline: none;
+
+        }
+
+ 
+
+        input[type="text"]:focus {
+
+            border-color: #6cbbf8;
+
+        }
+
+ 
+
+        button {
+
+            padding: 10px 15px;
+
+            background-color: #6cbbf8;
+
+            color: white;
+
+            border: none;
+
+            border-radius: 20px;
+
+            cursor: pointer;
+
+            font-size: 16px;
+
+        }
+
+ 
+
+        button:hover {
+
+            background-color: #57a6d9;
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+ 
+
+    <div class="chat-container">
+
+        <div id="messages" class="messages"></div>
+
+        <div class="input-container">
+
+            <input type="text" id="messageInput" placeholder="Ask me something..." />
+
+            <button id="sendMessageButton">Send</button>
+
+        </div>
+
+    </div>
+
+ 
+
+    <script>
+
+        const socket = new WebSocket("ws://localhost:8000/ws");
+
+ 
+
+        // Handle WebSocket open connection
+
+        socket.onopen = () => {
+
+            console.log("Connected to WebSocket server");
+
+        };
+
+ 
+
+        // Handle incoming WebSocket messages (tokens)
+
+        socket.onmessage = (event) => {
+
+            const responseToken = event.data;
+
+            const messagesDiv = document.getElementById("messages");
+
+ 
+
+            // Find the most recent bot message that needs to be updated
+
+            let botMessage = document.querySelector('.message.bot:last-child');
+
+ 
+
+            if (!botMessage) {
+
+                // If no bot message exists (this is the first response), create a new one
+
+                botMessage = document.createElement('div');
+
+                botMessage.classList.add("message", "bot");
+
+                messagesDiv.appendChild(botMessage);
+
+            }
+
+ 
+
+            // Check if the response is a code block (starts and ends with triple backticks)
+
+            if (responseToken.trim().startsWith("```") && responseToken.trim().endsWith("```")) {
+
+                // Remove the triple backticks and wrap the code in a <pre> tag
+
+                const codeBlock = document.createElement('pre');
+
+                codeBlock.classList.add('code-block');
+
+                codeBlock.textContent = responseToken.trim().slice(3, -3); // Remove the triple backticks
+
+                botMessage.innerHTML = ''; // Clear previous content
+
+                botMessage.appendChild(codeBlock);
+
+            } else {
+
+                // If it's not a code block, treat it as normal text
+
+                botMessage.textContent += responseToken;
+
+            }
+
+ 
+
+            // Auto-scroll to the bottom of the chat
+
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+        };
+
+ 
+
+        // When WebSocket closes
+
+        socket.onclose = () => {
+
+            console.log("Disconnected from WebSocket server");
+
+        };
+
+ 
+
+        // Send user message to WebSocket server
+
+        document.getElementById("sendMessageButton").onclick = () => {
+
+            const messageInput = document.getElementById("messageInput");
+
+            const userMessage = messageInput.value.trim();
+
+ 
+
+            if (userMessage) {
+
+                // Display the user's message in the chat
+
+                const messagesDiv = document.getElementById("messages");
+
+ 
+
+                // Create a new message bubble for the user
+
+                const userMessageDiv = document.createElement('div');
+
+                userMessageDiv.classList.add("message", "user");
+
+                userMessageDiv.textContent = userMessage;
+
+                messagesDiv.appendChild(userMessageDiv);
+
+ 
+
+                // Send the message to WebSocket server
+
+                socket.send(userMessage);
+
+ 
+
+                // Clear input field
+
+                messageInput.value = "";
+
+ 
+
+                // Auto-scroll to the bottom
+
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+            }
+
+        };
+
+ 
+
+        // Allow pressing Enter to send a message
+
+        document.getElementById("messageInput").addEventListener("keypress", (event) => {
+
+            if (event.key === "Enter") {
+
+                document.getElementById("sendMessageButton").click();
+
+            }
+
+        });
+
+    </script>
+
+ 
+
+</body>
+
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LangGraph AI Chat</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
+        #chat-box { width: 90%; max-width: 600px; margin: auto; border: 1px solid gray; padding: 10px; height: 300px; overflow-y: auto; }
+        input, button { padding: 10px; margin-top: 10px; width: 80%; }
+        button { width: 15%; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <h2>LangGraph AI Assistant</h2>
+    <div id="chat-box"></div>
+    
+    <input type="text" id="user-input" placeholder="Type your message..." />
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        const chatBox = document.getElementById("chat-box");
+        const userInput = document.getElementById("user-input");
+        const ws = new WebSocket("ws://localhost:8000/ws");  // Connect to FastAPI WebSocket
+
+        ws.onmessage = (event) => {
+            const message = JSON.parse(event.data);
+            displayMessage(message.role, message.text);
+        };
+
+        function sendMessage() {
+            const text = userInput.value.trim();
+            if (text) {
+                ws.send(text);
+                displayMessage("You", text);
+                userInput.value = "";
+            }
+        }
+
+        function displayMessage(role, text) {
+            const msg = document.createElement("p");
+            msg.innerHTML = `<strong>${role}:</strong> ${text}`;
+            chatBox.appendChild(msg);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
+
+</body>
+</html>

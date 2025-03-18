@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatGPT-Like Interface</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #f7f7f8;
+        }
+
+        .chat-container {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 15px;
+            max-width: 75%;
+            word-wrap: break-word;
+            display: flex;
+            align-items: center;
+        }
+
+        .message.user { background-color: #e0f7fa; align-self: flex-start; }
+        .message.bot { background-color: #f1f1f1; align-self: flex-end; }
+
+        .code-block {
+            background-color: #2d2d2d;
+            color: #f8f8f2;
+            border-radius: 10px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap; /* Maintain indentation and spaces */
+            word-wrap: break-word;
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+
+        .input-container {
+            display: flex;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-top: 1px solid #ddd;
+        }
+
+        input { flex-grow: 1; padding: 12px; border-radius: 20px; border: 1px solid #ddd; }
+        button { padding: 10px 15px; background-color: #4caf50; color: white; border: none; border-radius: 20px; cursor: pointer; }
+        button:hover { background-color: #45a049; }
+    </style>
+</head>
+<body>
+    <div class="chat-container" id="chatContainer"></div>
+    <div class="input-container">
+        <input type="text" id="messageInput" placeholder="Type your message...">
+        <button id="sendMessageButton">Send</button>
+    </div>
+
+    <script>
+        const socket = new WebSocket("ws://localhost:8000/ws");
+        const chatContainer = document.getElementById("chatContainer");
+        const messageInput = document.getElementById("messageInput");
+        const sendMessageButton = document.getElementById("sendMessageButton");
+
+        let botResponse = "";
+        let isCodeBlock = false;
+        let currentCodeBlock = null;
+
+        socket.onmessage = (event) => {
+            const responseToken = event.data;
+
+            if (responseToken.includes("```")) {
+                isCodeBlock = !isCodeBlock;
+                if (isCodeBlock) {
+                    currentCodeBlock = document.createElement('pre');
+                    currentCodeBlock.classList.add('code-block');
+                    const codeMessageDiv = document.createElement('div');
+                    codeMessageDiv.classList.add("message", "bot");
+                    codeMessageDiv.appendChild(currentCodeBlock);
+                    chatContainer.appendChild(codeMessageDiv);
+                }
+            } else {
+                if (isCodeBlock) {
+                    currentCodeBlock.textContent += responseToken + "\n";
+                } else {
+                    let textMessageDiv = document.createElement('div');
+                    textMessageDiv.classList.add("message", "bot");
+                    textMessageDiv.textContent = responseToken;
+                    chatContainer.appendChild(textMessageDiv);
+                }
+            }
+
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        };
+
+        sendMessageButton.onclick = () => {
+            const userMessage = messageInput.value.trim();
+            if (userMessage) {
+                displayUserMessage(userMessage);
+                socket.send(userMessage);
+                messageInput.value = "";
+            }
+        };
+
+        messageInput.addEventListener("keypress", (event) => {
+            if (event.key === "Enter") {
+                sendMessageButton.click();
+            }
+        });
+
+        function displayUserMessage(message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add("message", "user");
+            messageDiv.textContent = message;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+    </script>
+</body>
+</html>

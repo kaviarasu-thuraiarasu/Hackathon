@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ChatGPT-Like Interface</title>
+
+    <style>
+
+        body {
+
+            font-family: Arial, sans-serif;
+
+            margin: 0;
+
+            padding: 0;
+
+            display: flex;
+
+            flex-direction: column;
+
+            height: 100vh;
+
+            background-color: #f7f7f8;
+
+        }
+
+ 
+
+        .chat-container {
+
+            width: 100%;
+
+            height: calc(100% - 70px);
+
+            display: flex;
+
+            flex-direction: column;
+
+            padding: 20px;
+
+            box-sizing: border-box;
+
+            overflow-y: auto;
+
+            margin-bottom: 50px;
+
+        }
+
+ 
+
+        .message {
+
+            margin-bottom: 15px;
+
+            padding: 12px;
+
+            border-radius: 15px;
+
+            max-width: 75%;
+
+            word-wrap: break-word;
+
+            display: flex;
+
+            align-items: center;
+
+            margin-left: 10px;
+
+        }
+
+ 
+
+        .message.user {
+
+            background-color: #e0f7fa;
+
+            align-self: flex-start;
+
+        }
+
+ 
+
+        .message.bot {
+
+            background-color: #f1f1f1;
+
+            align-self: flex-end;
+
+        }
+
+ 
+
+        .message span {
+
+            font-size: 16px;
+
+            color: #333;
+
+        }
+
+ 
+
+        .input-container {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            padding: 15px;
+
+            background-color: #f9f9f9;
+
+            position: fixed;
+
+            bottom: 0;
+
+            width: 100%;
+
+            box-sizing: border-box;
+
+            border-top: 1px solid #ddd;
+
+        }
+
+ 
+
+        input[type="text"] {
+
+            width: 85%;
+
+            padding: 12px;
+
+            border-radius: 20px;
+
+            border: 1px solid #ddd;
+
+            font-size: 16px;
+
+            outline: none;
+
+        }
+
+ 
+
+        button {
+
+            padding: 10px 15px;
+
+            background-color: #4caf50;
+
+            color: white;
+
+            border: none;
+
+            border-radius: 20px;
+
+            cursor: pointer;
+
+            font-size: 16px;
+
+        }
+
+ 
+
+        button:hover {
+
+            background-color: #45a049;
+
+        }
+
+ 
+
+        /* Code Block Styling */
+
+        .code-block {
+
+            background-color: #2d2d2d;
+
+            color: #f8f8f2;
+
+            border: 1px solid #ddd;
+
+            border-radius: 10px;
+
+            padding: 15px;
+
+            font-family: 'Courier New', monospace;
+
+            font-size: 14px;
+
+            white-space: pre-wrap; /* Ensures line breaks are preserved */
+
+            word-wrap: break-word;
+
+            max-width: 100%;
+
+            overflow-x: auto;
+
+            margin-top: 15px;
+
+            line-height: 1.5;
+
+        }
+
+ 
+
+        /* Syntax highlighting colors */
+
+        .code-block span.keyword {
+
+            color: #d73a49; /* Red for keywords */
+
+            font-weight: bold;
+
+        }
+
+ 
+
+        .code-block span.string {
+
+            color: #32cd32; /* Green for strings */
+
+        }
+
+ 
+
+        .code-block span.comment {
+
+            color: #6a9955; /* Green for comments */
+
+            font-style: italic;
+
+        }
+
+ 
+
+        .code-block span.number {
+
+            color: #b5cea8; /* Light green for numbers */
+
+        }
+
+ 
+
+        .message-container {
+
+            display: flex;
+
+            flex-direction: column;
+
+        }
+
+ 
+
+        .user-message, .bot-message {
+
+            display: flex;
+
+            justify-content: flex-start;
+
+            margin-bottom: 10px;
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+ 
+
+    <div class="chat-container" id="chatContainer">
+
+        <!-- Messages will appear here -->
+
+    </div>
+
+ 
+
+    <div class="input-container">
+
+        <input type="text" id="messageInput" placeholder="Type your message..." />
+
+        <button id="sendMessageButton">Send</button>
+
+    </div>
+
+ 
+
+    <script>
+
+        const socket = new WebSocket("ws://localhost:8000/ws");
+
+        const chatContainer = document.getElementById("chatContainer");
+
+        const messageInput = document.getElementById("messageInput");
+
+        const sendMessageButton = document.getElementById("sendMessageButton");
+
+ 
+
+        let botResponse = ""; // Initialize bot response
+
+ 
+
+        socket.onopen = () => {
+
+            console.log("Connected to WebSocket server");
+
+        };
+
+ 
+
+        // Handle incoming messages (tokens)
+
+        socket.onmessage = (event) => {
+
+            const responseToken = event.data;
+
+ 
+
+            // Concatenate tokens into a complete response
+
+            botResponse += responseToken;
+
+ 
+
+            // When the response ends (could be a period or end of code block)
+
+            if (responseToken.trim().endsWith(".") || responseToken.trim().endsWith("```")) {
+
+                displayBotResponse(botResponse);
+
+                botResponse = ""; // Clear the response after displaying
+
+            }
+
+        };
+
+ 
+
+        // Handle WebSocket close event
+
+        socket.onclose = () => {
+
+            console.log("Disconnected from WebSocket server");
+
+        };
+
+ 
+
+        // Send user message to WebSocket
+
+        sendMessageButton.onclick = () => {
+
+            const userMessage = messageInput.value.trim();
+
+ 
+
+            if (userMessage) {
+
+                displayUserMessage(userMessage);
+
+                socket.send(userMessage);  // Send the message to the server
+
+                messageInput.value = "";   // Clear input field
+
+            }
+
+        };
+
+ 
+
+        // Allow Enter key to send the message
+
+        messageInput.addEventListener("keypress", (event) => {
+
+            if (event.key === "Enter") {
+
+                sendMessageButton.click();
+
+            }
+
+        });
+
+ 
+
+        // Function to display the user's message in the chat container
+
+        function displayUserMessage(message) {
+
+            const userMessageDiv = document.createElement('div');
+
+            userMessageDiv.classList.add("message", "user");
+
+            const userMessageText = document.createElement('span');
+
+            userMessageText.textContent = message;
+
+            userMessageDiv.appendChild(userMessageText);
+
+            chatContainer.appendChild(userMessageDiv);
+
+            chatContainer.scrollTop = chatContainer.scrollHeight;  // Scroll to bottom
+
+        }
+
+ 
+
+        // Function to display the bot's response in the chat container
+
+        function displayBotResponse(response) {
+
+            const botMessageDiv = document.createElement('div');
+
+            botMessageDiv.classList.add("message", "bot");
+
+ 
+
+            if (response.trim().startsWith("```") && response.trim().endsWith("```")) {
+
+                // Handle code block responses
+
+                const codeBlock = document.createElement('pre');
+
+                codeBlock.classList.add('code-block');
+
+                codeBlock.textContent = response.trim().slice(3, -3); // Remove backticks
+
+                const formattedCode = formatCode(codeBlock.textContent);
+
+                codeBlock.innerHTML = formattedCode;
+
+                botMessageDiv.appendChild(codeBlock);
+
+            } else {
+
+                // Handle regular text responses
+
+                const messageText = document.createElement('span');
+
+                messageText.textContent = response;
+
+                botMessageDiv.appendChild(messageText);
+
+            }
+
+ 
+
+            chatContainer.appendChild(botMessageDiv);
+
+            chatContainer.scrollTop = chatContainer.scrollHeight;  // Scroll to bottom
+
+        }
+
+ 
+
+        // Format code with basic syntax highlighting
+
+        function formatCode(code) {
+
+            return code
+
+                .replace(/(def|class|return|import|from|as|if|else|elif|for|while|try|except)/g, '<span class="keyword">$1</span>') // Keywords
+
+                .replace(/('[^']*'|[^"]*"[^"]*")/g, '<span class="string">$1</span>') // Strings
+
+                .replace(/#.*$/gm, '<span class="comment">$&</span>') // Comments
+
+                .replace(/\b\d+\b/g, '<span class="number">$&</span>'); // Numbers
+
+        }
+
+    </script>
+
+ 
+
+</body>
+
+</html>
