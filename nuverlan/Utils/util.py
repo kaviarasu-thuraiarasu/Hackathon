@@ -1,4 +1,6 @@
 from nuverlan.llm.model import model
+import os
+
 def generate_comprehensive_spec(user_stories):
 
     combined_spec_prompt = """
@@ -27,3 +29,17 @@ def generate_comprehensive_spec(user_stories):
  
     response = model().process().invoke(prompt)
     return response.content
+
+
+
+
+
+def generate_and_save_code(response):
+   
+    code, path_filename = response.strip().split("\n\nPath: ")
+    path, filename = path_filename.split("\nFilename: ")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, 'w') as file:
+        file.write(code)
+    
+    return path, filename
