@@ -8,3 +8,4 @@ reportlab
 langchain_openai
 langgraph
 python_dotenv
+langchain_groq

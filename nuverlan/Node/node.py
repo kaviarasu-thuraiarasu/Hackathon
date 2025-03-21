@@ -20,7 +20,7 @@ class node:
     
     def generate_user_stories(self,state):
         print("***********Generate User Story***********")
-        prompt = f"Generate a list of 2 user stories for an {state['user_requirement']}, with each user story formatted as: 'As a [type of user], I want [goal] so that [reason].' Please return the response as a list (array format)."
+        prompt = f"Generate a list of 3 user stories for an {state['user_requirement']}, with each user story formatted as: 'As a [type of user], I want [goal] so that [reason].' Please return the response as a list (array format)."
         data = self.model.stream_llm_response(prompt)
         print(data)
         # return {"user_story":[self.model.process().invoke(state["user_requirement"] + "Create the list of user stories with acceptence critera")]}
@@ -39,16 +39,16 @@ class node:
     
     def create_design_document(self,state):
         print("***********create Design Document***********")
-        comprehensive_spec = generate_comprehensive_spec(state['user_story'])
+        # comprehensive_spec = generate_comprehensive_spec(state['user_story'])
         
-        doc = Document()
-        doc.add_heading('Design Documentation', 0)
+        # doc = Document()
+        # doc.add_heading('Design Documentation', 0)
 
-        # Add the generated content to the Word document
-        doc.add_paragraph(comprehensive_spec)
+        # # Add the generated content to the Word document
+        # doc.add_paragraph(comprehensive_spec)
 
-        # Save the DOCX document
-        doc.save('comprehensive_specification.docx')
+        # # Save the DOCX document
+        # doc.save('comprehensive_specification.docx')
         return {"design_document":"Created"}
        
 

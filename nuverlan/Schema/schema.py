@@ -3,7 +3,7 @@ from typing import List
 
 class Section(BaseModel):
     task: str = Field(
-        description="Brief overview of the main topics and concepts to be covered in this section.",
+        description="Listing all the task of the user story",
     )
 
 class Sections(BaseModel):

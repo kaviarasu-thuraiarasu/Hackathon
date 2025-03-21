@@ -88,8 +88,9 @@ if __name__ =="__main__":
   
    for event in final_graph.stream({"user_requirement":"Library management Application."},thread,stream_mode="values"):
    
-    print(event)
-
+        print(event)
+    
+   
    if final_graph.get_state(thread).tasks[0].interrupts:
 
         interrupted_state = final_graph.get_state(thread)[0]

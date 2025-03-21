@@ -1,5 +1,6 @@
 from nuverlan.llm.model import model
 import os
+from pathlib import Path
 
 def generate_comprehensive_spec(user_stories):
 
@@ -38,8 +39,21 @@ def generate_and_save_code(response):
    
     code, path_filename = response.strip().split("\n\nPath: ")
     path, filename = path_filename.split("\nFilename: ")
+    path = path.replace("`","")
+    filename = filename.replace("`","")
+    print("Path **************",path)
+    print("filename **************",filename)
+   
+    osDir = Path(path+filename)
+    lines = code.splitlines()
+
+    if lines[0].startswith("```") and lines[-1].startswith("```"):
+        cleaned_code = "\n".join(lines[1:-1])  # Exclude the first and last lines
+    else:
+        cleaned_code = code  # No changes if backticks are not present
+
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, 'w') as file:
-        file.write(code)
+    with open(osDir, 'w') as file:
+        file.write(cleaned_code)
     
-    return path, filename
+    return path, filename,osDir
