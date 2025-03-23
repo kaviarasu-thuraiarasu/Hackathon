@@ -86,7 +86,7 @@ def run_orchestrator(state):
             "As a library administrator, I want the ability to add new books, update existing book information, or remove books from the inventory. This feature is crucial for maintaining an up-to-date and accurate catalog of the library’s collection. It ensures that members can access accurate information when searching for books and allows the library to manage its resources efficiently."
         ]
     orchestrator_state = final_graph.invoke(
-        {"task": prompt}
+        {"task": state["user_story"]}
     )
     #print(orchestrator_state)
     # Store the generated project path in the main workflow

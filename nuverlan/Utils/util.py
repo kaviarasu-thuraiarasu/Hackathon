@@ -57,3 +57,27 @@ def generate_and_save_code(response):
         file.write(cleaned_code)
     
     return path, filename,osDir
+
+
+def generate_folder(template):
+   
+    code, path_filename = template.strip().split("\n\nPath: ")
+    path, filename = path_filename.split("\nFilename: ")
+    path = path.replace("`","")
+    filename = filename.replace("`","")
+    print("Path **************",path)
+    print("filename **************",filename)
+   
+    osDir = Path(path+filename)
+    lines = code.splitlines()
+
+    if lines[0].startswith("```") and lines[-1].startswith("```"):
+        cleaned_code = "\n".join(lines[1:-1])  # Exclude the first and last lines
+    else:
+        cleaned_code = code  # No changes if backticks are not present
+
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(osDir, 'w') as file:
+        file.write(cleaned_code)
+    
+    return path, filename,osDir

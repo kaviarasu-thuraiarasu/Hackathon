@@ -87,7 +87,7 @@ Filename: `<filename.ext>`  # The appropriate file extension based on the langua
                 """
         
 
-        section = self.llm.invoke(f"{prompt} : {state['section'].task}")
+        section = self.llm.invoke(f"{state['section'].task}")
         print("************CODE GENRATION******************")
         print(section.content)
         # Generate and save code to the file
