@@ -33,66 +33,39 @@ class Orchestrator:
 
     def llm_call(self,state: WorkerState):
         """Worker writes a section of the report"""
-        prompt = """
-                    You are a code generator. Based on the user's request, generate the code required to implement the described functionality. Provide only the generated code, followed by the appropriate **relative file path** and **file extension type**, considering the standard project structure **inside the specified root directory**.
+        prompt = f"""
+    Using the following user story, generate the complete source code. Return the response as a structured JSON object with details about each file's path, filename, and the corresponding code.
 
-### Guidelines:
+    Requirements:
+    1. Follow standard best practices for the chosen language or framework.
+       - Organize code into appropriate directories (e.g., components, modules, views, helpers, styles).
+       - Implement state management, routing, and styling as required.
+       - Include comments in the code where helpful.
+    2. Assume necessary dependencies and environment setup are already in place.
+    3. Return the output strictly in the following JSON format:
+    [
+      {{
+        "filePath": "[Relative Path]",
+        "fileName": "[Filename]",
+        "code": "[Code]"
+      }}
+    ]
+    User Story: {state['section'].task}
 
-1. **Root Directory Specification:** Assume the root directory is explicitly specified as `E:/AgenticAI/Hackathon/Output`. All generated file paths should be relative to this root directory.
-
-2. **Identify the Programming Language:** Determine the language from the user's request.
-
-3. **Standard Project Structure:** Within the root directory, organize the code using common subdirectories for the identified language:
-   - **`src/`**: Core source code.
-     - **`services/`**: Business logic and service classes.
-     - **`constants/`**: Constant values and configurations.
-     - **`utilities/` or `utils/`**: Helper functions and utilities.
-     - **`models/`**: Data structures or entities.
-     - **`controllers/`**: Request and response logic (MVC pattern).
-     - **`repositories/`**: Data access and database interactions.
-     - **`middlewares/`**: Middleware components (commonly used in web applications).
-     - **`adapters/`**: Integration with external systems or libraries.
-   - **`tests/`**: Unit tests and test cases.
-   - **`docs/`**: Project documentation.
-
-4. **Language-Specific Examples:**
-   - **Python:** 
-     - `E:/AgenticAI/Hackathon/Output/src/services/`, `E:/AgenticAI/Hackathon/Output/src/constants/`
-   - **Java (using Maven):**
-     - `E:/AgenticAI/Hackathon/Output/src/main/java/com/yourcompany/yourproject/services/`
-   - **JavaScript/TypeScript:**
-     - `E:/AgenticAI/Hackathon/Output/src/services/`, `E:/AgenticAI/Hackathon/Output/src/constants/`
-   - **Go:**
-     - `E:/AgenticAI/Hackathon/Output/pkg/services/`, `E:/AgenticAI/Hackathon/Output/pkg/constants/`
-
-5. **Response Format:**
-   - **Generated Code:** Only the relevant code.
-   - **File Path:** A relative path starting from the **root directory**.
-   - **Filename:** Include the correct file extension based on the programming language.
-
-### Request Example:
-
-"Write Python code for a function that allows a user to search for books in a library by title or author using an in-memory list of books."
-
-### Response Format:
-
-<Generated Code>
-
-Path: `E:/AgenticAI/Hackathon/Output/<relative file path inside standard subdirectory>`
-Filename: `<filename.ext>`  # The appropriate file extension based on the language
-
-
-
-                    For the following task
-                """
+    Provide the response strictly in the requested JSON format without additional explanations or commentary or single line of description.
+    """
+            
+        
         
 
-        section = self.llm.invoke(f"{state['section'].task}")
+        section = self.llm.invoke(prompt)
         print("************CODE GENRATION******************")
         print(section.content)
         # Generate and save code to the file
-        path, filename,fullPath = generate_and_save_code(section.content)
-        return {"generated_files": [str(fullPath)]}
+        #path, filename,fullPath = generate_and_save_code(section.content)
+        file_list = generate_and_save_code(section.content)
+        #return {"generated_files": [str(fullPath)]}
+        return {"generated_files": [*file_list]}
 
 
     def synthesizer(self,state: State):

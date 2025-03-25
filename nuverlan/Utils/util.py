@@ -1,6 +1,7 @@
 from nuverlan.llm.model import model
 import os
 from pathlib import Path
+import json
 
 def generate_comprehensive_spec(user_stories):
 
@@ -37,26 +38,57 @@ def generate_comprehensive_spec(user_stories):
 
 def generate_and_save_code(response):
    
-    code, path_filename = response.strip().split("\n\nPath: ")
-    path, filename = path_filename.split("\nFilename: ")
-    path = path.replace("`","")
-    filename = filename.replace("`","")
-    print("Path **************",path)
-    print("filename **************",filename)
+    # code, path_filename = response.strip().split("\n\nPath: ")
+    # path, filename = path_filename.split("\nFilename: ")
+    # path = path.replace("`","")
+    # filename = filename.replace("`","")
+    # print("Path **************",path)
+    # print("filename **************",filename)
    
-    osDir = Path(path+filename)
-    lines = code.splitlines()
+    #osDir = Path(path+filename)
+    lines = response.splitlines()
+    file_list = []
 
-    if lines[0].startswith("```") and lines[-1].startswith("```"):
-        cleaned_code = "\n".join(lines[1:-1])  # Exclude the first and last lines
+    # if lines[0].startswith("```") and lines[-1].startswith("```"):
+    #     cleaned_code = "\n".join(lines[1:-1])  # Exclude the first and last lines
+    # else:
+    #     cleaned_code = response  # No changes if backticks are not present
+    print("**************PRE-PROCESSING*****************")
+    if lines[0].startswith("["):
+        #response = lines
+        print("==============IF===============")
     else:
-        cleaned_code = code  # No changes if backticks are not present
-
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(osDir, 'w') as file:
-        file.write(cleaned_code)
+        response = response.split("[\n  {")[1]
+        response = "[\n  {" + response
+        response = response.split("\n```")[0]
     
-    return path, filename,osDir
+    
+    # print(response)
+    data = json.loads((response))
+    print(type(data))
+    for dir in data:
+       
+        directory = dir['filePath']
+        if dir['filePath'][-1]=="/":
+            ...
+        else:
+            dir['filePath'] = dir['filePath']+"/"
+
+        directory = dir['filePath']
+
+        if "." in directory:
+            directory = directory.rsplit('/', 1)[0]
+            filePath = "E:/AgenticAI/Hackathon/Output/"+directory
+        else:
+            filePath= "E:/AgenticAI/Hackathon/Output/"+directory + dir["fileName"]
+
+        os.makedirs("E:/AgenticAI/Hackathon/Output/"+ os.path.dirname(directory), exist_ok=True)
+        
+        with open(filePath, 'w') as file:
+            file.write(dir['code'])
+            file_list.append(filePath)
+    
+    return file_list
 
 
 def generate_folder(template):
@@ -81,3 +113,5 @@ def generate_folder(template):
         file.write(cleaned_code)
     
     return path, filename,osDir
+
+

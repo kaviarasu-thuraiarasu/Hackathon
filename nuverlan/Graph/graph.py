@@ -17,6 +17,7 @@ class graph:
         self.graph.add_node('human',self.child_node.human_assistance)
         self.graph.add_node('generate_source_code',self.child_node.generate_code)
         self.graph.add_node('orchestrator',run_orchestrator)
+        self.graph.add_node('CodeReview',self.child_node.code_review)
         
         self.graph.add_edge(START,'generate_user_story')
         self.graph.add_edge('generate_user_story','product_owner_review')
@@ -27,7 +28,7 @@ class graph:
 
         self.graph.add_conditional_edges('review_design',self.child_node.validate_design_review,{"FeedBack":"create_design_document","Approved":"generate_source_code"})
         self.graph.add_edge('generate_source_code','orchestrator')
-
+        self.graph.add_edge('orchestrator','CodeReview')
 
     
     def setup_graph(self):

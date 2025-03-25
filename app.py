@@ -88,8 +88,8 @@ def handle_interruption(graph, interrupted_state):
        
         interrupted_state = None  # Reset interruption tracking
         for next_event in stream:
-            #print("Event:", next_event)
-            ...
+            print("Event:", next_event)
+            
         
         if graph.get_state(thread_config).tasks and graph.get_state(thread_config).tasks[0].interrupts:
             interrupted_state = graph.get_state(thread_config)[0]

@@ -211,7 +211,7 @@ Only refer the below JSON response as example  and give dynamic filename and fol
     'content': '# Real Estate App\n\n## Setup\n\n1. Clone the repository\n2. Run `npm install` to install dependencies\n3. Run `npm start` to start the development server\n\n## Deployment\n\n1. Run `npm run build` to build the application\n2. Run `npm run deploy` to deploy the application\n\n## Integration\n\n1. Import existing product data from `product-data.json`\n2. Integrate user authentication using existing credentials or an external API\n3. Integrate Stripe payment gateway for secure transactions'
   }
 }
-Return the user stories as an array of objects, where each object represents a separate user story.
+Return the 1 user stories as an array of objects, where each object represents a separate user story.
 '''
 
 
@@ -280,3 +280,37 @@ Return the user stories as an array of objects, where each object represents a s
     
     def assistant(self,state):
         return {'messages': [self.model.process().invoke(state['messages'])]}
+    
+    def code_review(self,state):
+        review_status = []
+        for path in state["generated_files"]:
+            with open(path, "r") as file:
+              content = file.read()
+
+            status = self.code_review_details(content)
+            json_data = json.loads(status)
+            if json_data['ReviewRequired']:
+              json_data["File"] = path
+              review_status.append(json_data)
+        print("************CODE REVIEW*************")
+        print(review_status)
+
+    def code_review_details(self,code):
+        prompt="""
+                  Review the provided code carefully. Identify issues or improvements needed and respond **ONLY** with a JSON object in the following format:
+                    {
+                    "File": "Name of the file being reviewed (e.g., models.py, views.py, auth.py)",
+                    "IssuesFound": [
+                    {
+                    "IssueType": "Type of issue (e.g., Security, Logic Error, Code Style, Performance)",
+                    "Description": "Detailed description of the issue or improvement needed",
+                    "SuggestedFix": "Suggested solution or improvement"
+                    }
+                    ],
+                    "ReviewRequired": true or false
+                    }
+                  Review the following code:
+
+                """
+        data = self.model.stream_llm_response(prompt+code)
+        return data

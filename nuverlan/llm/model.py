@@ -22,11 +22,14 @@ class model:
         response = self.llm.stream(messages)
         
         streamed_text = ""
+        # print("@@@@@@@@@@@@@@@@")
+        # print(response)
         for chunk in response:
+            
             if chunk.content:
                 streamed_text += chunk.content
-                self.websocket_handler.send_message("1", f"Message received: {streamed_text}")
-                print(chunk.content, end="", flush=True)  # ✅ Stream output in real-time
-        print("\n")  # New line for readability
+                #self.websocket_handler.send_message("1", f"Message received: {chunk.content}")
+                #print(chunk.content, end="", flush=True)  # ✅ Stream output in real-time
+        #print("\n")  # New line for readability
         return streamed_text  # Return full response
     
