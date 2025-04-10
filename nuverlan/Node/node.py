@@ -8,6 +8,7 @@ from langchain_core.messages import HumanMessage
 import websockets
 from nuverlan.websocket.websocket import WebSocketHandler
 import json
+import asyncio
 class node:
     def __init__(self):
         self.model = model()
@@ -228,9 +229,12 @@ Return the 1 user stories as an array of objects, where each object represents a
         else:
             user_story_processed_data = user_story_processed_data  # No changes if backticks are not present
         print(user_story_processed_data)
-        #print(data)
+        print("?????????????")
         #websockets.send_text(data['user_story'])
-        #self.websocket_handler.send_message('1', f'Message received: {data}')
+        # p = ""
+        # loop = asyncio.get_event_loop()
+        # loop.run_in_executor(None, self.websocket_handler.send_message('1', f"user_story:{user_story_processed_data}"), p)
+        
         # return {'user_story':[self.model.process().invoke(state['user_requirement'] + 'Create the list of user stories with acceptence critera')]}
         return {'user_story':user_story_processed_data}
 
@@ -276,7 +280,8 @@ Return the 1 user stories as an array of objects, where each object represents a
 
     def generate_code(self,state):
         print('***********Generate Code***********')
-        return state    
+        return state  
+        #return "Approved" if state["code_review_files"].length==0 else "FeedBack"  
     
     def assistant(self,state):
         return {'messages': [self.model.process().invoke(state['messages'])]}
@@ -287,15 +292,17 @@ Return the 1 user stories as an array of objects, where each object represents a
             with open(path, "r") as file:
               content = file.read()
 
-            status = self.code_review_details(content)
+            status = self.code_review_details(content,path)
             json_data = json.loads(status)
             if json_data['ReviewRequired']:
               json_data["File"] = path
               review_status.append(json_data)
         print("************CODE REVIEW*************")
         print(review_status)
+        return {"code_review_files": [*review_status]}
+        
 
-    def code_review_details(self,code):
+    def code_review_details(self,code,path):
         prompt="""
                   Review the provided code carefully. Identify issues or improvements needed and respond **ONLY** with a JSON object in the following format:
                     {
@@ -312,5 +319,22 @@ Return the 1 user stories as an array of objects, where each object represents a
                   Review the following code:
 
                 """
+        print("***********CODE REVIEW ******************")
+        print(path)
         data = self.model.stream_llm_response(prompt+code)
         return data
+    
+    def code_review_status(self,state):
+        return "Approved" if state["code_review_files"].length>0 else "FeedBack"
+    
+    def fix_code(self,state):
+        for path in state["code_review_files"]:
+            with open(path['File'], "r") as file:
+              content = file.read()
+
+            status = self.code_review_details(content,path)
+            json_data = json.loads(status)
+            if json_data['ReviewRequired']:
+              json_data["File"] = path
+        state["code_review_files"] = []
+        return {"code_review_files": []}

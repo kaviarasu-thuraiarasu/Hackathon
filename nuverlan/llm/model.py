@@ -5,7 +5,7 @@ from nuverlan.websocket.websocket import WebSocketHandler
 
 class model:
     def __init__(self):
-        # self.llm = ChatOpenAI(model="gpt-4",streaming=True,api_key="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")
+        #self.llm = ChatOpenAI(model="gpt-4o",streaming=True,api_key="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")
         self.llm = ChatGroq(model="llama3-70b-8192",streaming=True,api_key="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")
         self.websocket_handler = WebSocketHandler()
 

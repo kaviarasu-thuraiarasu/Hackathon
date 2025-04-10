@@ -34,21 +34,46 @@ const App = () => {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>WebSocket Chat</h2>
-      <div style={{ border: "1px solid #ccc", padding: "100%", height: "100%", overflowY: "auto" }}>
-        {messages.map((msg, index) => (
+    // <div style={{ padding: "20px" }}>
+    //   <h2>WebSocket Chat</h2>
+    //   <div style={{ border: "1px solid #ccc", padding: "100%", height: "100%", overflowY: "auto" }}>
+    //     {messages.map((msg, index) => (
+    //       <p key={index}>{msg}</p>
+    //     ))}
+    //   </div>
+    //   <input
+    //     type="text"
+    //     value={input}
+    //     onChange={(e) => setInput(e.target.value)}
+    //     placeholder="Type a message..."
+    //   />
+    //   <button onClick={sendMessage}>Send</button>
+    // </div>
+
+    <div class="chat-container">
+
+    <div id="messages" class="messages">
+
+    {messages.map((msg, index) => (
           <p key={index}>{msg}</p>
         ))}
-      </div>
-      <input
+    </div>
+
+    <div class="input-container">
+
+        {/* <input type="text" id="messageInput" placeholder="Ask me something..." /> */}
+        <input
         type="text"
         value={input}
         onChange={(e) => setInput(e.target.value)}
         placeholder="Type a message..."
       />
-      <button onClick={sendMessage}>Send</button>
+
+        <button id="sendMessageButton" onClick={sendMessage}>Send</button>
+
     </div>
+
+</div>
   );
 };
 

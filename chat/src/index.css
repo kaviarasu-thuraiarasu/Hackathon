@@ -1,4 +1,4 @@
-:root {
+/* :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -65,4 +65,210 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+} */
+
+body {
+
+  font-family: Arial, sans-serif;
+
+  background-color: #f7f7f7;
+
+  margin: 0;
+
+  padding: 0;
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  height: 100vh;
+
+}
+
+
+
+.chat-container {
+
+  width: 800px; /* Increased width */
+
+  height: 900px; /* Increased height */
+
+  max-width: 100%;
+
+  background-color: white;
+
+  border-radius: 10px;
+
+  overflow: hidden;
+
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+
+  display: flex;
+
+  flex-direction: column;
+
+  padding: 20px;
+
+  position: relative;
+
+}
+
+
+
+.messages {
+
+  flex-grow: 1;
+
+  overflow-y: auto;
+
+  margin-bottom: 20px;
+
+  padding-right: 10px;
+
+  padding-left: 10px; /* Added padding */
+
+}
+
+
+
+.message {
+
+  margin-bottom: 15px;
+
+  padding: 10px;
+
+  border-radius: 10px;
+
+  max-width: 75%;
+
+  word-wrap: break-word; /* Prevent overflow */
+
+}
+
+
+
+.message.user {
+
+  background-color: #d1e7ff;
+
+  align-self: flex-start;
+
+  margin-left: 10px;
+
+  margin-bottom: 5px;
+
+}
+
+
+
+.message.bot {
+
+  background-color: #f1f1f1;
+
+  align-self: flex-end;
+
+  margin-right: 10px;
+
+  margin-bottom: 5px;
+
+}
+
+
+
+/* Code Block Styles */
+
+.code-block {
+
+  background-color: #282c34;
+
+  color: #f8f8f2;
+
+  border: 1px solid #ddd;
+
+  border-radius: 10px;
+
+  padding: 15px;
+
+  font-family: 'Courier New', monospace;
+
+  font-size: 14px;
+
+  white-space: pre-wrap; /* Ensures wrapping for long lines */
+
+  word-wrap: break-word; /* Prevents overflow */
+
+  margin: 0;
+
+  max-width: 100%;
+
+  overflow-x: auto;
+
+}
+
+
+
+.input-container {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+}
+
+
+
+input[type="text"] {
+
+  width: 80%;
+
+  padding: 10px;
+
+  border-radius: 20px;
+
+  border: 1px solid #ddd;
+
+  font-size: 16px;
+
+  outline: none;
+
+}
+
+
+
+input[type="text"]:focus {
+
+  border-color: #6cbbf8;
+
+}
+
+
+
+button {
+
+  padding: 10px 15px;
+
+  background-color: #6cbbf8;
+
+  color: white;
+
+  border: none;
+
+  border-radius: 20px;
+
+  cursor: pointer;
+
+  font-size: 16px;
+
+}
+
+
+
+button:hover {
+
+  background-color: #57a6d9;
+
 }

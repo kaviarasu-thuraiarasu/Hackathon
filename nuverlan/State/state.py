@@ -39,6 +39,7 @@ class State(TypedDict):
     user_story: Annotated[list,add_messages] #List[str,add_messages]  # User-provided requirements
     # project_structure: Optional[Dict[str, Dict[str, str]]] = None  # Folder & file structure
     generated_files: Annotated[list,operator.add]  # Code files
+    code_review_files: Annotated[list,operator.add]  # Code files
     # review_feedback: Optional[Dict[str, Dict[str, str]]] = None  # Code files
     user_requirement:str
     #user_story:Annotated[list,add_messages]

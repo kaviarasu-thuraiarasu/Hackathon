@@ -18,6 +18,7 @@ class graph:
         self.graph.add_node('generate_source_code',self.child_node.generate_code)
         self.graph.add_node('orchestrator',run_orchestrator)
         self.graph.add_node('CodeReview',self.child_node.code_review)
+        self.graph.add_node('FixCode',self.child_node.fix_code)
         
         self.graph.add_edge(START,'generate_user_story')
         self.graph.add_edge('generate_user_story','product_owner_review')
@@ -29,6 +30,7 @@ class graph:
         self.graph.add_conditional_edges('review_design',self.child_node.validate_design_review,{"FeedBack":"create_design_document","Approved":"generate_source_code"})
         self.graph.add_edge('generate_source_code','orchestrator')
         self.graph.add_edge('orchestrator','CodeReview')
+        self.graph.add_conditional_edges('CodeReview',self.child_node.code_review_status,{"Approved":"FixCode","FeedBack":"FixCode"})
 
     
     def setup_graph(self):
@@ -81,11 +83,7 @@ def run_orchestrator(state):
     g = OrchestratorGraph()
     g.create_graph()
     final_graph = g.setup_graph()
-    prompt = [
-            "As a library member, I want to be able to search for books by various criteria such as title, author, or genre. This feature will help me quickly find the books I am interested in, making it easier for me to borrow them. Whether I want a specific title or I'm just browsing for something new to read, having an effective search functionality will enhance my library experience..",
-            "As a library member, I want to be able to view the books I currently have checked out and see their due dates. This feature will allow me to keep track of when my borrowed items are due back, helping me avoid late fees. It will also give me a better understanding of what I have in hand and when to return them, making the borrowing process more organized.",
-            "As a library administrator, I want the ability to add new books, update existing book information, or remove books from the inventory. This feature is crucial for maintaining an up-to-date and accurate catalog of the library’s collection. It ensures that members can access accurate information when searching for books and allows the library to manage its resources efficiently."
-        ]
+ 
     orchestrator_state = final_graph.invoke(
         {"task": state["user_story"]}
     )

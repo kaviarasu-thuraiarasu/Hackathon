@@ -57,12 +57,12 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
 
                 print(event)
                 #await websocket.send_text(json.dumps({"message": "Hello from Python!"}))
-                await websocket_handler.send_message(user_id, f"Message received: {event}")
+                await websocket_handler.send_message(user_id, f"user_requirement : {event['user_requirement']}")
 
             if final_graph.get_state(thread).tasks[0].interrupts:
 
                 interrupted_state = final_graph.get_state(thread)[0]
-                handle_interruption(final_graph, interrupted_state)
+                await handle_interruption(final_graph, interrupted_state)
 
             # Process only after receiving input
             response = f"Processed: {message.upper()}"  # Example transformation
@@ -73,22 +73,24 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
             break  # Stop if error occurs
 
 
-def handle_interruption(graph, interrupted_state):
+async def handle_interruption(graph, interrupted_state):
     """Handles each interruption and resumes execution."""
    
     thread_config = {"configurable": {"thread_id": "1"}}
     while interrupted_state:
        
-        user_input = input(graph.get_state(thread_config).tasks[0].interrupts[0].value + " ")  
+        #user_input = input(graph.get_state(thread_config).tasks[0].interrupts[0].value + " ")  
         # Inject user input into the interrupted state
         # key = "user_feedback" if "feedback" in interrupted_state["input"] else "confirmation"
 
         # Resume execution with updated state
+        user_input = await websocket_handler.receive_message('1')
         stream = graph.stream(Command(resume=user_input), thread_config, stream_mode="values")
        
         interrupted_state = None  # Reset interruption tracking
         for next_event in stream:
             print("Event:", next_event)
+            await websocket_handler.send_message('1', f"user_requirement== : {next_event['user_requirement']}")
             
         
         if graph.get_state(thread_config).tasks and graph.get_state(thread_config).tasks[0].interrupts:
